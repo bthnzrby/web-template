@@ -44,7 +44,15 @@ import {
   resolveLatestProcessName,
 } from '../../transactions/transaction';
 
-import { ModalInMobile, PrimaryButton, AvatarSmall, H1, H2 } from '../../components';
+import {
+  ModalInMobile,
+  PrimaryButton,
+  AvatarSmall,
+  H1,
+  H2,
+  Button,
+  SecondaryButton,
+} from '../../components';
 
 import css from './OrderPanel.module.css';
 
@@ -183,6 +191,8 @@ const OrderPanel = props => {
     fetchLineItemsInProgress,
     fetchLineItemsError,
     payoutDetailsWarning,
+    onToggleFavorites,
+    currentUser,
   } = props;
 
   const publicData = listing?.attributes?.publicData || {};
@@ -257,6 +267,22 @@ const OrderPanel = props => {
   const classes = classNames(rootClassName || css.root, className);
   const titleClasses = classNames(titleClassName || css.orderTitle);
 
+  const isFavorite = currentUser?.attributes.profile.privateData.favorites?.includes(
+    listing.id.uuid
+  );
+
+  const toggleFavorites = () => onToggleFavorites(isFavorite);
+
+  const favoriteButton = isFavorite ? (
+    <SecondaryButton className={css.favoriteButton} onClick={toggleFavorites}>
+      <FormattedMessage id="OrderPanel.unfavoriteButton" />
+    </SecondaryButton>
+  ) : (
+    <Button className={css.favoriteButton} onClick={toggleFavorites}>
+      <FormattedMessage id="OrderPanel.addFavoriteButton" />
+    </Button>
+  );
+
   return (
     <div className={classes}>
       <ModalInMobile
@@ -294,7 +320,7 @@ const OrderPanel = props => {
             <FormattedMessage id="OrderPanel.author" values={{ name: authorDisplayName }} />
           </span>
         </div>
-
+        {favoriteButton}
         {showPriceMissing ? (
           <PriceMissing />
         ) : showInvalidCurrency ? (
@@ -463,6 +489,12 @@ OrderPanel.propTypes = {
   marketplaceCurrency: string.isRequired,
   dayCountAvailableForBooking: number.isRequired,
   marketplaceName: string.isRequired,
+
+  rootClassName: string,
+  className: string,
+
+  onToggleFavorites: func.isRequired,
+  currentUser: propTypes.currentUser.isRequired,
 
   // from withRouter
   history: shape({
