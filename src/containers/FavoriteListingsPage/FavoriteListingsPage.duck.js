@@ -85,6 +85,13 @@ export const queryFavoriteListings = queryParams => (dispatch, getState, sdk) =>
   dispatch(queryFavoritesRequest(queryParams));
   const { currentUser } = getState().user;
   const { favorites } = currentUser?.attributes.profile.privateData || {};
+  if (!favorites || favorites.length === 0) {
+    const response = {
+      data: { data: [], meta: { page: 1, perPage: queryParams.perPage, totalItems: 0 } },
+    };
+    dispatch(queryFavoritesSuccess(response));
+    return Promise.resolve([]);
+  }
 
   const favoritesMaybe = favorites ? { ids: favorites } : {};
   const { perPage, ...rest } = queryParams;
@@ -103,7 +110,30 @@ export const queryFavoriteListings = queryParams => (dispatch, getState, sdk) =>
     });
 };
 
-export const loadData = (params, search, config) => {
+// export const loadData = (params, search, config) => {
+//   const queryParams = parse(search);
+//   const page = queryParams.page || 1;
+
+//   const {
+//     aspectWidth = 1,
+//     aspectHeight = 1,
+//     variantPrefix = 'listing-card',
+//   } = config.layout.listingImage;
+//   const aspectRatio = aspectHeight / aspectWidth;
+
+//   return queryFavoriteListings({
+//     ...queryParams,
+//     page,
+//     perPage: RESULT_PAGE_SIZE,
+//     include: ['author', 'images'],
+//     'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],
+//     ...createImageVariantConfig(`${variantPrefix}`, 400, aspectRatio),
+//     ...createImageVariantConfig(`${variantPrefix}-2x`, 800, aspectRatio),
+//     'limit.images': 1,
+//   });
+// };
+
+export const loadData = (params, search, config) => (dispatch, getState, sdk) => {
   const queryParams = parse(search);
   const page = queryParams.page || 1;
 
@@ -114,14 +144,28 @@ export const loadData = (params, search, config) => {
   } = config.layout.listingImage;
   const aspectRatio = aspectHeight / aspectWidth;
 
-  return queryFavoriteListings({
-    ...queryParams,
-    page,
-    perPage: RESULT_PAGE_SIZE,
-    include: ['images'],
-    'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],
-    ...createImageVariantConfig(`${variantPrefix}`, 400, aspectRatio),
-    ...createImageVariantConfig(`${variantPrefix}-2x`, 800, aspectRatio),
-    'limit.images': 1,
-  });
+  return sdk.currentUser
+    .show()
+    .then(userRaw => {
+      const user = userRaw.data.data;
+      const publicData = user.attributes?.profile?.publicData;
+      const { currentFavourites } = publicData;
+
+      return dispatch(
+        queryFavoriteListings({
+          ...queryParams,
+          page,
+          perPage: RESULT_PAGE_SIZE,
+          include: ['author', 'images'],
+          'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],
+          ...createImageVariantConfig(`${variantPrefix}`, 400, aspectRatio),
+          ...createImageVariantConfig(`${variantPrefix}-2x`, 800, aspectRatio),
+          'limit.images': 1,
+        })
+      );
+    })
+    .catch(e => {
+      const error = new Error('Failed to load current user');
+      return Promise.reject(error);
+    });
 };
