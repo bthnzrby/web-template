@@ -45,6 +45,8 @@ import {
   NamedRedirect,
   OrderPanel,
   LayoutSingleColumn,
+  Button,
+  SecondaryButton,
 } from '../../components';
 
 // Related components and modules
@@ -284,6 +286,21 @@ export const ListingPageComponent = props => {
     onUpdateFavorites,
     location,
   });
+  const isFavorite = currentUser?.attributes.profile.privateData.favorites?.includes(
+    currentListing.id.uuid
+  );
+
+  const toggleFavorites = () => onToggleFavorites(isFavorite);
+
+  const favoriteButton = isFavorite ? (
+    <SecondaryButton className={css.favoriteButtonMobile} onClick={toggleFavorites}>
+      <FormattedMessage id="OrderPanel.unfavoriteButton" />
+    </SecondaryButton>
+  ) : (
+    <Button className={css.favoriteButtonMobile} onClick={toggleFavorites}>
+      <FormattedMessage id="OrderPanel.addFavoriteButton" />
+    </Button>
+  );
   return (
     <Page
       title={schemaTitle}
@@ -340,6 +357,8 @@ export const ListingPageComponent = props => {
               </H4>
             </div>
             <SectionTextMaybe text={description} showAsIngress />
+
+            {favoriteButton}
 
             <CustomListingFields
               publicData={publicData}
