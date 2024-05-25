@@ -355,10 +355,9 @@ export const ListingPageComponent = props => {
               <H4 as="h1" className={css.orderPanelTitle}>
                 <FormattedMessage id="ListingPage.orderTitle" values={{ title: richTitle }} />
               </H4>
+              {favoriteButton}
             </div>
             <SectionTextMaybe text={description} showAsIngress />
-
-            {favoriteButton}
 
             <CustomListingFields
               publicData={publicData}

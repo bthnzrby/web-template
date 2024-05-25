@@ -23,8 +23,9 @@
 .favoriteButtonMobile {
   width: 45%;
   min-height: 49px;
-  margin-left: 30px;
+  margin-left: 5px;
   margin-bottom: 40px;
+  margin-top: 30px;
 }
 
 .sectionHero {
