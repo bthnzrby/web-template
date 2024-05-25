@@ -84,7 +84,7 @@ const FieldSelectListingType = props => {
     return listingTypeConfig ? listingTypeConfig.label : listingType;
   };
 
-  return hasMultipleListingTypes && !hasExistingListingType ? (
+  return hasMultipleListingTypes ? (
     <>
       <FieldSelect
         id={formId ? `${formId}.${name}` : name}
@@ -111,7 +111,7 @@ const FieldSelectListingType = props => {
       <FieldHidden name="transactionProcessAlias" />
       <FieldHidden name="unitType" />
     </>
-  ) : hasMultipleListingTypes && hasExistingListingType ? (
+  ) : (
     <div className={css.listingTypeSelect}>
       <Heading as="h5" rootClassName={css.selectedLabel}>
         {intl.formatMessage({ id: 'EditListingDetailsForm.listingTypeLabel' })}
@@ -121,13 +121,14 @@ const FieldSelectListingType = props => {
       <FieldHidden name="transactionProcessAlias" />
       <FieldHidden name="unitType" />
     </div>
-  ) : (
-    <>
-      <FieldHidden name={name} />
-      <FieldHidden name="transactionProcessAlias" />
-      <FieldHidden name="unitType" />
-    </>
   );
+  // : (
+  //   <>
+  //     <FieldHidden name={name} />
+  //     <FieldHidden name="transactionProcessAlias" />
+  //     <FieldHidden name="unitType" />
+  //   </>
+  // );
 };
 
 // Finds the correct subcategory within the given categories array based on the provided categoryIdToFind.
