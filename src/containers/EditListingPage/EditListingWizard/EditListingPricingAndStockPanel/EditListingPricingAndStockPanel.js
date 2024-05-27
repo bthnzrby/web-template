@@ -71,7 +71,7 @@ const EditListingPricingAndStockPanel = props => {
 
   const classes = classNames(rootClassName || css.root, className);
   const initialValues = state.initialValues;
-
+  console.log(state);
   // Form needs to know data from listingType
   const publicData = listing?.attributes?.publicData;
   const unitType = publicData.unitType;
@@ -105,8 +105,8 @@ const EditListingPricingAndStockPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { price, stock, stockTypeInfinity } = values;
-
+            const { dis, price, stock, stockTypeInfinity } = values;
+            console.log(values);
             // Update stock only if the value has changed, or stock is infinity in stockType,
             // but not current stock is a small number (might happen with old listings)
             // NOTE: this is going to be used on a separate call to API
@@ -136,6 +136,7 @@ const EditListingPricingAndStockPanel = props => {
 
             // New values for listing attributes
             const updateValues = {
+              dis,
               price,
               ...stockUpdateMaybe,
             };
@@ -143,6 +144,7 @@ const EditListingPricingAndStockPanel = props => {
             // Otherwise, re-rendering would overwrite the values during XHR call.
             setState({
               initialValues: {
+                dis,
                 price,
                 stock: stockUpdateMaybe?.stockUpdate?.newTotal || stock,
                 stockTypeInfinity,
