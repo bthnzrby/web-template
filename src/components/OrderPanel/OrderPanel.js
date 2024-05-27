@@ -17,6 +17,7 @@ import loadable from '@loadable/component';
 import classNames from 'classnames';
 import omit from 'lodash/omit';
 
+import { types as sdkTypes } from './../../util/sdkLoader';
 import { intlShape, injectIntl, FormattedMessage } from '../../util/reactIntl';
 import {
   displayDeliveryPickup,
@@ -125,6 +126,7 @@ const dateFormattingOptions = { month: 'short', day: 'numeric', weekday: 'short'
 const PriceMaybe = props => {
   const {
     price,
+    discountPriceAsMoney,
     publicData,
     validListingTypes,
     intl,
@@ -132,7 +134,6 @@ const PriceMaybe = props => {
     showCurrencyMismatch = false,
   } = props;
   const { listingType, unitType } = publicData || {};
-
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const showPrice = displayPrice(foundListingTypeConfig);
   if (!showPrice || !price) {
@@ -154,7 +155,19 @@ const PriceMaybe = props => {
     </div>
   ) : (
     <div className={css.priceContainer}>
-      <p className={css.price}>{formatMoney(intl, price)}</p>
+      {discountPriceAsMoney ? (
+        <div>
+          <del>
+            <p className={css.price}>{formatMoney(intl, price)}</p>
+          </del>
+          <p className={css.price}>{formatMoney(intl, discountPriceAsMoney)}</p>
+        </div>
+      ) : (
+        <div>
+          <p className={css.price}>{formatMoney(intl, price)}</p>
+        </div>
+      )}
+
       <div className={css.perUnit}>
         <FormattedMessage id="OrderPanel.perUnit" values={{ unitType }} />
       </div>
@@ -194,13 +207,17 @@ const OrderPanel = props => {
     onToggleFavorites,
     currentUser,
   } = props;
-
+  const { Money } = sdkTypes;
   const publicData = listing?.attributes?.publicData || {};
   const { listingType, unitType, transactionProcessAlias = '' } = publicData || {};
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const lineItemUnitType = lineItemUnitTypeMaybe || `line-item/${unitType}`;
 
   const price = listing?.attributes?.price;
+  const discountedPrice = publicData?.discountPrice || null;
+  const discountPriceAsMoney = discountedPrice
+    ? new Money(discountedPrice.amount, discountedPrice.currency)
+    : null;
   const isPaymentProcess = processName !== INQUIRY_PROCESS_NAME;
 
   const showPriceMissing = isPaymentProcess && !price;
@@ -308,6 +325,7 @@ const OrderPanel = props => {
           publicData={publicData}
           validListingTypes={validListingTypes}
           intl={intl}
+          discountPriceAsMoney={discountPriceAsMoney}
           marketplaceCurrency={marketplaceCurrency}
         />
 

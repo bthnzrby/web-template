@@ -294,6 +294,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'title',
         'geolocation',
         'price',
+        'publicData.discountPrice',
         'publicData.listingType',
         'publicData.transactionProcessAlias',
         'publicData.unitType',

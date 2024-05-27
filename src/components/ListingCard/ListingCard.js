@@ -15,7 +15,7 @@ import { createSlug } from '../../util/urlHelpers';
 import { isBookingProcessAlias } from '../../transactions/transaction';
 
 import { AspectRatioWrapper, NamedLink, ResponsiveImage } from '../../components';
-
+import { types as sdkTypes } from './../../util/sdkLoader';
 import css from './ListingCard.module.css';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
@@ -42,7 +42,8 @@ const priceData = (price, currency, intl) => {
 const LazyImage = lazyLoadWithDimensions(ResponsiveImage, { loadAfterInitialRendering: 3000 });
 
 const PriceMaybe = props => {
-  const { price, publicData, config, intl } = props;
+  const { price, discountPriceAsMoney, publicData, config, intl } = props;
+  // console.log(discountPriceAsMoney, 'asdfadsf');
   const { listingType } = publicData || {};
   const validListingTypes = config.listing.listingTypes;
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
@@ -50,14 +51,20 @@ const PriceMaybe = props => {
   if (!showPrice && price) {
     return null;
   }
-
   const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
   const { formattedPrice, priceTitle } = priceData(price, config.currency, intl);
   return (
     <div className={css.price}>
-      <div className={css.priceValue} title={priceTitle}>
-        {formattedPrice}
-      </div>
+      {discountPriceAsMoney ? (
+        <div className={css.priceValue} title={priceTitle}>
+          <del> {formattedPrice}</del>
+          <p className={css.price}>{formatMoney(intl, discountPriceAsMoney)}</p>
+        </div>
+      ) : (
+        <div className={css.priceValue} title={priceTitle}>
+          {formattedPrice}
+        </div>
+      )}
       {isBookable ? (
         <div className={css.perUnit}>
           <FormattedMessage id="ListingCard.perUnit" values={{ unitType: publicData?.unitType }} />
@@ -78,6 +85,7 @@ export const ListingCardComponent = props => {
     setActiveListing,
     showAuthorInfo,
   } = props;
+
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureListing(listing);
   const id = currentListing.id.uuid;
@@ -103,7 +111,11 @@ export const ListingCardComponent = props => {
         onMouseLeave: () => setActiveListing(null),
       }
     : null;
-
+  const { Money } = sdkTypes;
+  const discountedPrice = publicData?.discountPrice || null;
+  const discountPriceAsMoney = discountedPrice
+    ? new Money(discountedPrice.amount, discountedPrice.currency)
+    : null;
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
       <AspectRatioWrapper
@@ -121,7 +133,13 @@ export const ListingCardComponent = props => {
         />
       </AspectRatioWrapper>
       <div className={css.info}>
-        <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
+        <PriceMaybe
+          price={price}
+          discountPriceAsMoney={discountPriceAsMoney}
+          publicData={publicData}
+          config={config}
+          intl={intl}
+        />
         <div className={css.mainInfo}>
           <div className={css.title}>
             {richText(title, {

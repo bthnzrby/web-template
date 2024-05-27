@@ -27,7 +27,6 @@ const getInitialValues = props => {
   const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
   const price = listing?.attributes?.price || {};
   const currentStock = listing?.currentStock;
-  console.log(listing);
 
   const publicData = listing?.attributes?.publicData;
   const listingTypeConfig = getListingTypeConfig(publicData, listingTypes);
