@@ -25,13 +25,17 @@ const getListingTypeConfig = (publicData, listingTypes) => {
 const getInitialValues = props => {
   const { listing, listingTypes } = props;
   const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
-  const price = listing?.attributes?.price;
+  const price = listing?.attributes?.price || {};
   const currentStock = listing?.currentStock;
+  console.log(listing);
 
   const publicData = listing?.attributes?.publicData;
   const listingTypeConfig = getListingTypeConfig(publicData, listingTypes);
   const hasInfiniteStock = STOCK_INFINITE_ITEMS.includes(listingTypeConfig?.stockType);
-
+  const discountPrice = publicData?.discountPrice || null;
+  const discountedPriceAsMoney = discountPrice
+    ? new Money(discountPrice.amount, discountPrice.currency)
+    : null;
   // The listing resource has a relationship: `currentStock`,
   // which you should include when making API calls.
   // Note: infinite stock is refilled to billiard using "stockUpdateMaybe"
@@ -46,7 +50,7 @@ const getInitialValues = props => {
       : 1;
   const stockTypeInfinity = [];
 
-  return { price, stock, stockTypeInfinity };
+  return { discountPrice: discountedPriceAsMoney, price, stock, stockTypeInfinity };
 };
 
 const EditListingPricingAndStockPanel = props => {
@@ -105,8 +109,7 @@ const EditListingPricingAndStockPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { dis, price, stock, stockTypeInfinity } = values;
-            console.log(values);
+            const { discountPrice = null, price, stock, stockTypeInfinity } = values;
             // Update stock only if the value has changed, or stock is infinity in stockType,
             // but not current stock is a small number (might happen with old listings)
             // NOTE: this is going to be used on a separate call to API
@@ -136,7 +139,11 @@ const EditListingPricingAndStockPanel = props => {
 
             // New values for listing attributes
             const updateValues = {
-              dis,
+              publicData: {
+                discountPrice: discountPrice
+                  ? { amount: discountPrice.amount, currency: discountPrice.currency }
+                  : null,
+              },
               price,
               ...stockUpdateMaybe,
             };
@@ -144,7 +151,7 @@ const EditListingPricingAndStockPanel = props => {
             // Otherwise, re-rendering would overwrite the values during XHR call.
             setState({
               initialValues: {
-                dis,
+                discountPrice,
                 price,
                 stock: stockUpdateMaybe?.stockUpdate?.newTotal || stock,
                 stockTypeInfinity,

@@ -116,7 +116,8 @@ const getDateRangeQuantityAndLineItems = (orderData, code) => {
  */
 exports.transactionLineItems = (listing, orderData, providerCommission, customerCommission) => {
   const publicData = listing.attributes.publicData;
-  const unitPrice = listing.attributes.price;
+  const discountPrice = publicData?.discountPrice || null;
+  const unitPrice = discountPrice || listing.attributes.price;
   const currency = unitPrice.currency;
 
   /**

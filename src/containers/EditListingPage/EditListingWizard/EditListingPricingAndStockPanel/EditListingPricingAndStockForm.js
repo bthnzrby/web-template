@@ -172,14 +172,11 @@ export const EditListingPricingAndStockFormComponent = props => (
             validate={priceValidators}
           />
           <FieldCurrencyInput
-            id={`${formId}.dis`}
-            name="dis"
+            id={`${formId}.discountPrice`}
+            name="discountPrice"
             className={css.input}
             autoFocus={autoFocus}
-            label={intl.formatMessage(
-              { id: 'EditListingPricingAndStockForm.pricePerProduct' },
-              { unitType }
-            )}
+            label={'Discount Price (optional)'}
             placeholder={intl.formatMessage({
               id: 'EditListingPricingAndStockForm.priceInputPlaceholder',
             })}
